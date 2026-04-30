@@ -1,0 +1,26 @@
+app = "lookout-grafana"
+primary_region = "iad"
+
+[build]
+  dockerfile = "Dockerfile"
+
+[env]
+  GF_SECURITY_ADMIN_PASSWORD = "change-me-in-production"
+
+[http_service]
+  internal_port = 3000
+  force_https = true
+  auto_stop_machines = false
+  auto_start_machines = true
+  min_machines = 1
+  max_machines = 1
+
+[[vm]]
+  cpu_kind = "shared"
+  cpus = 1
+  memory_mb = 512
+
+# Persistent volume for Grafana dashboards and settings
+[[mounts]]
+  source = "grafana_data"
+  destination = "/var/lib/grafana"
