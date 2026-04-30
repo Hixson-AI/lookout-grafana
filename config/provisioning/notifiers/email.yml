@@ -1,0 +1,10 @@
+apiVersion: 1
+
+notifiers:
+  - name: email-alerts
+    type: email
+    uid: email-notifier
+    # Send to platform team email
+    settings:
+      addresses: platform@hixson.ai
+      singleEmail: true

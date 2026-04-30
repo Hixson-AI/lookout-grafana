@@ -1,0 +1,121 @@
+apiVersion: 1
+
+groups:
+  - name: platform.health
+    interval: 30s
+    rules:
+      - id: service.uptime.lookout-api
+        for: 5m
+        labels:
+          severity: critical
+          team: platform
+        annotations:
+          summary: "lookout-api is down"
+          description: "lookout-api has been down for more than 5 minutes"
+        expr: |
+          up{job="lookout-api"} == 0
+
+      - id: service.uptime.lookout-control
+        for: 5m
+        labels:
+          severity: critical
+          team: platform
+        annotations:
+          summary: "lookout-control is down"
+          description: "lookout-control has been down for more than 5 minutes"
+        expr: |
+          up{job="lookout-control"} == 0
+
+      - id: service.uptime.lookout-workers
+        for: 5m
+        labels:
+          severity: critical
+          team: platform
+        annotations:
+          summary: "lookout-workers is down"
+          description: "lookout-workers has been down for more than 5 minutes"
+        expr: |
+          up{job="lookout-workers"} == 0
+
+      - id: service.uptime.lookout-orchestrator
+        for: 5m
+        labels:
+          severity: critical
+          team: platform
+        annotations:
+          summary: "lookout-orchestrator is down"
+          description: "lookout-orchestrator has been down for more than 5 minutes"
+        expr: |
+          up{job="lookout-orchestrator"} == 0
+
+      - id: service.uptime.lookout-n8n-runner
+        for: 5m
+        labels:
+          severity: critical
+          team: platform
+        annotations:
+          summary: "lookout-n8n-runner is down"
+          description: "lookout-n8n-runner has been down for more than 5 minutes"
+        expr: |
+          up{job="lookout-n8n-runner"} == 0
+
+  - name: platform.performance
+    interval: 30s
+    rules:
+      - id: http.latency.p99.high
+        for: 10m
+        labels:
+          severity: warning
+          team: platform
+        annotations:
+          summary: "High HTTP latency P99"
+          description: "HTTP request P99 latency is above 1 second for {{ $labels.service }}"
+        expr: |
+          histogram_quantile(0.99, sum(rate(http_request_duration_seconds_bucket[5m])) by (le, service)) > 1
+
+      - id: http.error.rate.high
+        for: 5m
+        labels:
+          severity: warning
+          team: platform
+        annotations:
+          summary: "High HTTP error rate"
+          description: "HTTP error rate is above 5% for {{ $labels.service }}"
+        expr: |
+          sum(rate(http_requests_total{status_code=~"5.."}[5m])) by (service) / sum(rate(http_requests_total[5m])) by (service) > 0.05
+
+  - name: platform.observability
+    interval: 30s
+    rules:
+      - id: collector.ingest.rate.low
+        for: 5m
+        labels:
+          severity: warning
+          team: platform
+        annotations:
+          summary: "Low OTel Collector ingest rate"
+          description: "OTel Collector is receiving fewer than 10 spans/sec"
+        expr: |
+          rate(otelcol_receiver_accepted_spans[5m]) < 10
+
+      - id: loki.write.failed
+        for: 5m
+        labels:
+          severity: warning
+          team: platform
+        annotations:
+          summary: "Loki write failures"
+          description: "Loki is experiencing write failures"
+        expr: |
+          rate(loki_write_failed_total[5m]) > 0
+
+      - id: prometheus.scrape.failed
+        for: 5m
+        labels:
+          severity: warning
+          team: platform
+        annotations:
+          summary: "Prometheus scrape failures"
+          description: "Prometheus is experiencing scrape failures for {{ $labels.job }}"
+        expr: |
+          rate(prometheus_target_scrapes_exceeded_total[5m]) > 0

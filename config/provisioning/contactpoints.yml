@@ -1,0 +1,18 @@
+apiVersion: 1
+
+contactPoints:
+  - orgId: 1
+    name: platform-alerts
+    receivers:
+      - name: email-receiver
+        emailConfigs:
+          - to: platform@hixson.ai
+            subject: "[Alert] {{ .Status | toUpper }}: {{ .CommonLabels.alertname }}"
+            body: |
+              {{ range .Alerts }}
+              **Alert:** {{ .Labels.alertname }}
+              **Severity:** {{ .Labels.severity }}
+              **Description:** {{ .Annotations.description }}
+              **Status:** {{ .Status }}
+              **Fired at:** {{ .StartsAt.Format "2006-01-02 15:04:05" }}
+              {{ end }}
