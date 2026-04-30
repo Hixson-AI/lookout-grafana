@@ -1,0 +1,19 @@
+{
+  "name": "lookout-grafana",
+  "version": "1.0.0",
+  "description": "Lookout Grafana observability dashboard",
+  "scripts": {
+    "dns": "tsx scripts/dns.ts"
+  },
+  "dependencies": {
+    "commander": "^12.0.0",
+    "js-yaml": "^4.1.0"
+  },
+  "devDependencies": {
+    "@types/js-yaml": "^4.0.9",
+    "@types/node": "^22.0.0",
+    "tsx": "^4.7.0",
+    "typescript": "^5.4.0"
+  },
+  "packageManager": "pnpm@10.33.0"
+}

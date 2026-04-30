@@ -1,0 +1,96 @@
+name: DNS Management
+
+on:
+  workflow_dispatch:
+    inputs:
+      dns_file:
+        description: 'DNS config file (e.g., dns-dev.yaml or dns-prod.yaml)'
+        required: true
+        type: string
+      dry_run:
+        description: 'Dry run (no changes made)'
+        required: false
+        default: false
+        type: boolean
+      ipv4:
+        description: 'IPv4 address from Fly.io'
+        required: false
+        type: string
+      ipv6_1:
+        description: 'First IPv6 address from Fly.io'
+        required: false
+        type: string
+      ipv6_2:
+        description: 'Second IPv6 address from Fly.io'
+        required: false
+        type: string
+      hostname:
+        description: 'Fly.io app hostname for CNAME fallback'
+        required: false
+        type: string
+      ownership_name:
+        description: 'Fly.io ownership TXT record name'
+        required: false
+        type: string
+      ownership_value:
+        description: 'Fly.io ownership TXT record value'
+        required: false
+        type: string
+      acme_challenge:
+        description: 'DNS-01 challenge CNAME target from Fly.io wildcard cert'
+        required: false
+        type: string
+      cloudflare_domain:
+        description: 'Cloudflare base domain (e.g., cumberlandstrategygroup.com)'
+        required: true
+        type: string
+
+permissions:
+  contents: read
+
+jobs:
+  dns:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: 'pnpm'
+          
+      - name: Install dependencies
+        run: |
+          npm install -g tsx
+          pnpm install
+        
+      - name: Manage DNS records
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ZONE_ID: ${{ secrets.CLOUDFLARE_ZONE_ID }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          CLOUDFLARE_DOMAIN: ${{ github.event.inputs.cloudflare_domain }}
+          FLY_APP_NAME: lookout-grafana
+          FLY_IPV4: ${{ github.event.inputs.ipv4 }}
+          FLY_IPV6_1: ${{ github.event.inputs.ipv6_1 }}
+          FLY_IPV6_2: ${{ github.event.inputs.ipv6_2 }}
+          FLY_HOSTNAME: ${{ github.event.inputs.hostname }}
+          FLY_OWNERSHIP_NAME: ${{ github.event.inputs.ownership_name }}
+          FLY_OWNERSHIP_VALUE: ${{ github.event.inputs.ownership_value }}
+          FLY_ACME_CHALLENGE: ${{ github.event.inputs.acme_challenge }}
+        run: |
+          echo "DNS workflow inputs received:"
+          echo "  dns_file: ${{ github.event.inputs.dns_file }}"
+          echo "  ipv4: $FLY_IPV4"
+          echo "  ipv6_1: $FLY_IPV6_1"
+          echo "  ipv6_2: $FLY_IPV6_2"
+          echo "  hostname: $FLY_HOSTNAME"
+          
+          if [ "${{ github.event.inputs.dry_run }}" = "true" ]; then
+            DRY_RUN="--dry-run"
+          else
+            DRY_RUN=""
+          fi
+          
+          tsx scripts/dns.ts $DRY_RUN --yaml ${{ github.event.inputs.dns_file }}

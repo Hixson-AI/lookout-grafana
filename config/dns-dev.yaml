@@ -1,0 +1,16 @@
+domains:
+  grafana:
+    dev:
+      domain: "grafana.${CLOUDFLARE_DOMAIN}"
+      type: "CNAME"
+      target: "${FLY_HOSTNAME}"
+      status: "active"
+      ssl: true
+      proxy: false
+      description: "Grafana observability dashboard for dev environment"
+
+cloudflare:
+  zone_id: "${CLOUDFLARE_ZONE_ID}"
+  account_id: "${CLOUDFLARE_ACCOUNT_ID}"
+  ttl:
+    default: 3600
