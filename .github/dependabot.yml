@@ -1,0 +1,16 @@
+version: 2
+updates:
+  - package-ecosystem: "npm"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+    open-pull-requests-limit: 5
+    versioning-strategy: increase
+    ignore:
+      # Ignore patch updates - only major/minor
+      - dependency-name: "*"
+        update-types: ["version-update:semver-patch"]
+    automerge:
+      # Auto-merge if CI passes
+      enabled: true
